@@ -78,3 +78,12 @@ plot(x2$RMSF, pch = 19, cex = 0.5, xlab = "atoms", ylab = "RMSF")
 x2$RMSF <- NULL
 y2$RMSF <- NULL
 z2$RMSF <- NULL
+
+RMSD <- function(timeframe){
+     total <- 0
+     chain_A <- timeframe[,1]
+     for(col in ){
+          total <- total + sum(abs(col - chain_A))/length(col)	       
+     }
+     total <- sqrt(total/length(timeframe[1,])
+}
