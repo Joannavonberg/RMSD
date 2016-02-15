@@ -80,10 +80,17 @@ y2$RMSF <- NULL
 z2$RMSF <- NULL
 
 RMSD <- function(timeframe){
-     total <- 0
-     chain_A <- timeframe[,1]
-     for(col in ){
-          total <- total + sum(abs(col - chain_A))/length(col)	       
-     }
-     total <- sqrt(total/length(timeframe[1,])
+     tot <- 0
+     chainA <- timeframe[,1]
+     tot <- sum(apply(timeframe, 2, MeanDifference, chainA = chainA))
+     tot <- sqrt(tot/length(timeframe[1,]))
+     #tot
 }
+
+MeanDifference <- function(col, chainA){
+     sum(abs(col - chainA)^2)/length(col)
+}
+
+     #for(col in ){
+     #     total <- total + sum(abs(col - chain_A))/length(col)	       
+     #}
