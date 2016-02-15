@@ -1,13 +1,13 @@
 options(stringsasFactors = FALSE)
 
 # drie keer hetzelfde typen doet wel een beetje pijn, zoek uit hoe dat mooier kan
-tmp <- scan("PDB-parser/x.txt")
+tmp <- scan("../PDB-parser/xtest.txt")
 x <- data.frame(matrix(tmp, ncol = 8))
 colnames(x) <- c(LETTERS[1:8])		
-tmp <- scan("PDB-parser/y.txt")
+tmp <- scan("../PDB-parser/ytest.txt")
 y <- data.frame(matrix(tmp, ncol = 8))
 colnames(y) <- c(LETTERS[1:8])
-tmp <- scan("PDB-parser/z.txt")
+tmp <- scan("../PDB-parser/ztest.txt")
 z <- data.frame(matrix(tmp, ncol = 8))
 colnames(z) <- c(LETTERS[1:8])
 
@@ -84,7 +84,7 @@ RMSD <- function(timeframe){
      chainA <- timeframe[,1]
      tot <- sum(apply(timeframe, 2, MeanDifference, chainA = chainA))
      tot <- sqrt(tot/length(timeframe[1,]))
-     #tot
+     tot
 }
 
 MeanDifference <- function(col, chainA){
