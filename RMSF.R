@@ -78,3 +78,15 @@ plot(x2$RMSF, pch = 19, cex = 0.5, xlab = "atoms", ylab = "RMSF")
 x2$RMSF <- NULL
 y2$RMSF <- NULL
 z2$RMSF <- NULL
+
+RMSD <- function(timeframe){
+     tot <- 0
+     chainA <- timeframe[,1]
+     tot <- sum(apply(timeframe, 2, MeanDifference, chainA = chainA))
+     tot <- sqrt(tot/length(timeframe[1,]))
+     tot 
+}
+
+MeanDifference <- function(col, chainA){
+     sum(abs(col - chainA)^2)/length(col)
+}
