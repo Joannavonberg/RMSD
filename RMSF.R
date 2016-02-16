@@ -5,6 +5,20 @@ a <- 79.3
 b <- 79.3
 c <- 38.2
 
+rmsd <- c()
+
+RMSD <- function(timeframe){
+     tot <- 0
+     chainA <- timeframe[,1]
+     tot <- sum(apply(timeframe, 2, MeanDifference, chainA = chainA))
+     tot <- sqrt(tot/length(timeframe[1,]))
+     tot 
+}
+
+MeanDifference <- function(col, chainA){
+     sum(abs(col - chainA)^2)/length(col)
+}
+
 for(n in 1:100){
       tmp <- scan(sprintf("PDB-parser/x%.0f.txt",n))
       x <- data.frame(matrix(tmp, ncol = 8))
@@ -56,37 +70,7 @@ for(n in 1:100){
       y2$H <- (-x$H + b)%%b		# -X+1
       z2$H <- (-z$H - 0.5*c)%%c		# -Z+1/2
 
+      rmsd <- c(rmsd, mean(RMSD(x2), RMSD(y2), RMSD(z2)))
 }
 
-# calculate RMSF
-rmsf <- function(row, ucp){
-     total <- 0
-     first <- row[1]
-     for(e in row){
-     	   total <- total +  min( ucp - max(first, e) + min(first, e) , abs(first - e) )^2 # iets met modulo?
-     }
-     total <- sqrt(total/8)
-     total
-}
-
-x2$RMSF <- apply(x2, 1, rmsf, ucp = a)
-y2$RMSF <- apply(y2, 1, rmsf, ucp = b)
-z2$RMSF <- apply(z2, 1, rmsf, ucp = c)
-
-plot(x2$RMSF, pch = 19, cex = 0.5, xlab = "atoms", ylab = "RMSF")
-                               
-x2$RMSF <- NULL
-y2$RMSF <- NULL
-z2$RMSF <- NULL
-
-RMSD <- function(timeframe){
-     tot <- 0
-     chainA <- timeframe[,1]
-     tot <- sum(apply(timeframe, 2, MeanDifference, chainA = chainA))
-     tot <- sqrt(tot/length(timeframe[1,]))
-     tot 
-}
-
-MeanDifference <- function(col, chainA){
-     sum(abs(col - chainA)^2)/length(col)
-}
+plot(rmsd)
