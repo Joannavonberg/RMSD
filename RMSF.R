@@ -19,7 +19,25 @@ MeanDifference <- function(col, chainA){
      sum(abs(col - chainA)^2)/length(col)
 }
 
+rmsf <- function(row, ucp){
+     total <- 0
+     first <- row[1]
+     for(e in row){
+     	   total <- total + min( ucp - max(first, e) + min(first, e) , abs(first - e) )^2 # iets met modulo?
+     }
+     total <- sqrt(total/8)
+     total
+}
 
+x2$RMSF <- apply(x2, 1, rmsf, ucp = a)
+y2$RMSF <- apply(y2, 1, rmsf, ucp = b)
+z2$RMSF <- apply(z2, 1, rmsf, ucp = c)
+
+plot(x2$RMSF, pch = 19, cex = 0.5, xlab = "atoms", ylab = "RMSF")
+
+x2$RMSF <- NULL
+y2$RMSF <- NULL
+z2$RMSF <- NULL
 
 for(n in 1:100){
       tmp <- scan(sprintf("x%.0f.txt",n))
