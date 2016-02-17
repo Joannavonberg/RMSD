@@ -23,7 +23,7 @@ rmsf <- function(row, ucp){
      total <- 0
      first <- row[1]
      for(e in row){
-     	   total <- total + min( ucp - max(first, e) + min(first, e) , abs(first - e) )^2 # iets met modulo?
+     	   total <- total + min( ucp - max(first, e) + min(first, e) , abs(first - e) )^2
      }
      total <- sqrt(total/8)
      total
@@ -38,6 +38,7 @@ plot(x2$RMSF, pch = 19, cex = 0.5, xlab = "atoms", ylab = "RMSF")
 x2$RMSF <- NULL
 y2$RMSF <- NULL
 z2$RMSF <- NULL
+
 
 for(n in 1:100){
       tmp <- scan(sprintf("x%.0f.txt",n))
