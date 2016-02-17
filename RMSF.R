@@ -19,14 +19,16 @@ MeanDifference <- function(col, chainA){
      sum(abs(col - chainA)^2)/length(col)
 }
 
+
+
 for(n in 1:100){
-      tmp <- scan(sprintf("PDB-parser/x%.0f.txt",n))
+      tmp <- scan(sprintf("x%.0f.txt",n))
       x <- data.frame(matrix(tmp, ncol = 8))
       colnames(x) <- c(LETTERS[1:8])		
-      tmp <- scan(sprintf("PDB-parser/y%.0f.txt",n))
+      tmp <- scan(sprintf("y%.0f.txt",n))
       y <- data.frame(matrix(tmp, ncol = 8))
       colnames(y) <- c(LETTERS[1:8])
-      tmp <- scan(sprintf("PDB-parser/z%.0f.txt",n)
+      tmp <- scan(sprintf("z%.0f.txt",n))
       z <- data.frame(matrix(tmp, ncol = 8))
       colnames(z) <- c(LETTERS[1:8]) 
 
@@ -73,4 +75,6 @@ for(n in 1:100){
       rmsd <- c(rmsd, mean(RMSD(x2), RMSD(y2), RMSD(z2)))
 }
 
+png("rmsd_300K_NVT_cryodim.png")
 plot(rmsd)
+dev.off()
