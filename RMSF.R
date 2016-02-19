@@ -4,41 +4,63 @@ library(rPython)
 options(stringsasFactors = FALSE)
 
 # unit cell dimensions
-a <- 78.64	# NB!!! these are cryo-dimensions!
-b <- 79.64
-c <- 37.06
+#a <- 78.64	# NB!!! these are cryo-dimensions!
+#b <- 79.64
+#c <- 37.06
+
+a <- 79.3	# NB!!! these are RT-dimensions!
+b <- 79.3 
+c <- 38.2 
 
 rmsd <- c()
 
-# reference values are needed, read in the crystal structure PDB and extract all reference positions
+# reference values are needed, these are the positions of chain A at timestep 0
 
-RMSD <- function(timeframe){
+RMSD <- function(timeframe, ref, ucp){
      tot <- 0
-     chainA <- timeframe[,1]
-     tot <- sum(apply(timeframe, 2, MeanDifference, ref = chainA))
+     tot <- sum(apply(timeframe, 2, MeanDifference, ref = ref, ucp = ucp))
      tot <- sqrt(tot/length(timeframe[1,]))
      tot 
 }
 
-MeanDifference <- function(col, ref){
-     mean(abs(col - ref)^2)
+MeanDifference <- function(col, ref, ucp){
+     #mean(abs(col - ref)^2)
+     total <- 0
+     for(n in 1:length(col)){
+     	 total <- total + min( (ucp - max(ref[n], col[n]) + min(ref[n], col[n])) , abs(ref[n] - col[n]) )^2
+	 n <- n + 1
+     }
+     total <- total/length(col)
 }
 
-rmsf <- function(row, ucp){
+rmsf <- function(row, ucp, ref){
      total <- 0
-     first <- row[1]
      for(e in row){
-     	   total <- total + min( ucp - max(first, e) + min(first, e) , abs(first - e) )^2
+     	   total <- total + min( ucp - max(ref, e) + min(ref, e) , abs(ref - e) )^2
      }
      total <- sqrt(total/8)
      total
 }
 
-x2$RMSF <- apply(x2, 1, rmsf, ucp = a)
-y2$RMSF <- apply(y2, 1, rmsf, ucp = b)
-z2$RMSF <- apply(z2, 1, rmsf, ucp = c)
+dif <- function(row, ucp, ref){
+    total <- 0
+    n <- 1
+    for (e in row){
+    	total <- total + (abs(e - ref[n])%%ucp)^2
+	n <- n + 1
+    }
+    total <- sqrt(total/8)
+    total
+}
 
-plot(x2$RMSF, pch = 19, cex = 0.5, xlab = "atoms", ylab = "RMSF")
+x2$RMSF <- apply(x2, 1, rmsf, ucp = a, ref = refx)
+y2$RMSF <- apply(y2, 1, rmsf, ucp = b, ref = refy)
+z2$RMSF <- apply(z2, 1, rmsf, ucp = c, ref = refz)
+
+png("frame45_z2_rmsf.png")
+plot(z2$RMSF, pch = 19, cex = 0.5, xlab = "atoms", ylab = "RMSF")
+lines(z2$RMSF)
+dev.off()
 
 x2$RMSF <- NULL
 y2$RMSF <- NULL
@@ -54,6 +76,12 @@ for(n in 1:101){
       tmp <- scan(sprintf("z%.0f.txt",n))
       z <- data.frame(matrix(tmp, ncol = 8))
       colnames(z) <- c(LETTERS[1:8]) 
+
+      if(n == 1){
+      	   refx <- x$A
+	   refy <- y$A
+	   refz <- z$A
+      }
 
       x2 <- x
       y2 <- y
@@ -95,11 +123,12 @@ for(n in 1:101){
       y2$H <- (-x$H + b)%%b		# -X+1
       z2$H <- (-z$H - 0.5*c)%%c		# -Z+1/2
 
-      rmsd <- c(rmsd, mean(RMSD(x2), RMSD(y2), RMSD(z2)))
+      rmsd <- c(rmsd, mean(RMSD(x2, ref = refx, ucp = a), RMSD(y2, ref = refy, ucp = b), RMSD(z2, ref = refz, ucp = c)))
 }
 
-png("rmsd_300K_NVT_cryodim.png")
-plot(rmsd)
+png("rmsd_300K_NPT.png")
+plot(rmsd, pch = 19, cex = 0.5, xlab = "timesteps", ylab = "RMSD")
+lines(rmsd)
 dev.off()
 
 # to write to a pdb file
