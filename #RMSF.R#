@@ -4,24 +4,22 @@ library(rPython)
 options(stringsasFactors = FALSE)
 
 # unit cell dimensions
-a <- 78.64	# NB!!! these are cryo-dimensions!
-b <- 79.64
-c <- 37.06
+a <- 79.3
+b <- 79.3
+c <- 38.2
 
 rmsd <- c()
-
-# reference values are needed, read in the crystal structure PDB and extract all reference positions
 
 RMSD <- function(timeframe){
      tot <- 0
      chainA <- timeframe[,1]
-     tot <- sum(apply(timeframe, 2, MeanDifference, ref = chainA))
+     tot <- sum(apply(timeframe, 2, MeanDifference, chainA = chainA))
      tot <- sqrt(tot/length(timeframe[1,]))
      tot 
 }
 
-MeanDifference <- function(col, ref){
-     mean(abs(col - ref)^2)
+MeanDifference <- function(col, chainA){
+     sum(abs(col - chainA)^2)/length(col)
 }
 
 rmsf <- function(row, ucp){
@@ -59,41 +57,41 @@ for(n in 1:101){
       y2 <- y
       z2 <- z
 
-      #x <- x%%a
-      #y <- y%%b
-      #z <- z%%c
+      #x <- x
+      #y <- y
+      #z <- z
 
-      x2$A <- x$A%%a
-      y2$A <- y$A%%b
-      z2$A <- z$A%%c
+      x2$A <- x$A
+      y2$A <- y$A
+      z2$A <- z$A
 
-      x2$B <- (-x$B + a)%%a		# -X+1
-      y2$B <- (-y$B + b)%%b	  	# -Y+1
-      z2$B <- (z$B - 0.5*c)%%c	  	# Z+1/2
+      x2$B <- (-x$B + a)		# -X+1
+      y2$B <- (-y$B + b)	  	# -Y+1
+      z2$B <- (z$B - 0.5*c)	  	# Z+1/2
 
-      x2$C <- (y$C - 0.5*b)%%a		# -Y+1/2
-      y2$C <- (-x$C + 0.5*a)%%b   		# X+1/2
-      z2$C <- (z$C + 0.25*c)%%c		# Z-1/4
+      x2$C <- (y$C - 0.5*b)		# -Y+1/2
+      y2$C <- (-x$C + 0.5*a)   		# X+1/2
+      z2$C <- (z$C + 0.25*c)		# Z-1/4
 
-      x2$D <- (-y$D + 0.5*a)%%a		# Y+1/2
-      y2$D <- (x$D - 0.5*b)%%b 		 # -X+1/2
-      z2$D <- (z$D - 0.25*c)%%c		# Z+1/4
+      x2$D <- (-y$D + 0.5*a)		# Y+1/2
+      y2$D <- (x$D - 0.5*b) 		 # -X+1/2
+      z2$D <- (z$D - 0.25*c)		# Z+1/4
 
-      x2$E <- (-x$E + 0.5*a)%%a	  	# -X+1/2
-      y2$E <- (y$E - 0.5*b)%%b		# Y+1/2
-      z2$E <- (-z$E + 0.75*c)%%c		# -Z+3/4
+      x2$E <- (-x$E + 0.5*a)	  	# -X+1/2
+      y2$E <- (y$E - 0.5*b)		# Y+1/2
+      z2$E <- (-z$E + 0.75*c)		# -Z+3/4
 
-      x2$F <- (x$F - 0.5*a)%%a		# X+1/2
-      y2$F <- (-y$F + 0.5*b)%%b		# -Y+1/2
-      z2$F <- (-z$F + 1.25*c)%%c	  	# -Z+5/4
+      x2$F <- (x$F - 0.5*a)		# X+1/2
+      y2$F <- (-y$F + 0.5*b)		# -Y+1/2
+      z2$F <- (-z$F + 1.25*c)	  	# -Z+5/4
 
-      x2$G <- (y$G)%%b			# Y
-      y2$G <- x$G%%a			# X
-      z2$G <- (-z$G + c)%%c		# -Z+1
+      x2$G <- (y$G)			# Y
+      y2$G <- x$G			# X
+      z2$G <- (-z$G + c)		# -Z+1
 
-      x2$H <- (-y$H + a)%%a		# -Y+1
-      y2$H <- (-x$H + b)%%b		# -X+1
-      z2$H <- (-z$H - 0.5*c)%%c		# -Z+1/2
+      x2$H <- (-y$H + a)		# -Y+1
+      y2$H <- (-x$H + b)		# -X+1
+      z2$H <- (-z$H - 0.5*c)		# -Z+1/2
 
       rmsd <- c(rmsd, mean(RMSD(x2), RMSD(y2), RMSD(z2)))
 }
