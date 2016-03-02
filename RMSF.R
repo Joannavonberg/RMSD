@@ -1,4 +1,5 @@
-install.packages("rPython") 
+install.packages("rPython")
+#install.packages(repos=NULL, pkgs="/var/autofs/pauken/home/berg/R/i486-pc-linux-gnu-library/2.15/rPython")
 library(rPython)
 
 options(stringsasFactors = FALSE)
@@ -14,7 +15,7 @@ c <- 37.06
 
 rmsd <- c()
 
-# reference values are needed, these are the positions of chain A at timestep 0
+# reference values are needed, these are the positions of the crystal structure
 
 RMSD <- function(timeframe, ref, ucp){
      tot <- 0
@@ -69,6 +70,16 @@ z2$RMSF <- NULL
 
 python.load('/work/berg/scripts/changePDB.py')
 
+#	CRYO
+refx <- scan("/work/berg/Git/ref/x_cryo.txt")
+refy <- scan("/work/berg/Git/ref/y_cryo.txt")
+refz <- scan("/work/berg/Git/ref/z_cryo.txt")
+
+#	RT
+#refx <- scan("/work/berg/Git/ref/x_rt.txt")
+#refy <- scan("/work/berg/Git/ref/y_rt.txt")
+#refz <- scan("/work/berg/Git/ref/z_rt.txt")
+
 for(n in 1:101){
       tmp <- scan(sprintf("x%.0f.txt",n))
       x <- data.frame(matrix(tmp, ncol = 8))
@@ -79,22 +90,6 @@ for(n in 1:101){
       tmp <- scan(sprintf("z%.0f.txt",n))
       z <- data.frame(matrix(tmp, ncol = 8))
       colnames(z) <- c(LETTERS[1:8]) 
-
-      if(n == 1){
-      	   refx <- x$A%%a
-	   refy <- y$A%%b
-	   refz <- z$A%%c
-
-	   #for(t in 1:8){
-	   #     x_premodulo <- x2[,t][1]
-	   # 	y_premodulo <- y2[,t][1]
-	   # 	z_premodulo <- z2[,t][1]
-
-#      	    	x_trans <- x_premodulo%%a - x_premodulo
-#	    	y_trans <- y_premodulo%%b - y_premodulo
-#	    	z_trans <- z_premodulo%%c - z_premodulo
-#	   }
-      }
 
       x2 <- x
       y2 <- y
@@ -108,8 +103,8 @@ for(n in 1:101){
       #y2$A <- y$A%%b
       #z2$A <- z$A%%c
 
-      x2$B <- (-x$B)		# -X+1
-      y2$B <- (-y$B)	  	# -Y+1
+      x2$B <- (-x$B)			# -X+1
+      y2$B <- (-y$B)	  		# -Y+1
       z2$B <- (z$B - 0.5*c)	  	# Z+1/2
 
       x2$C <- (y$C - 0.5*b)		# -Y+1/2
@@ -134,7 +129,7 @@ for(n in 1:101){
 
       x2$H <- (-y$H)		# -Y+1
       y2$H <- (-x$H)		# -X+1
-      z2$H <- (-z$H - 0.5*c)		# -Z+1/2
+      z2$H <- (-z$H + 0.5*c)		# -Z+1/2
 
       # to put the first atom in the unit cell, and keep molecules whole
       
