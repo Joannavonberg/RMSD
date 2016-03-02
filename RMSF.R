@@ -4,13 +4,13 @@ library(rPython)
 options(stringsasFactors = FALSE)
 
 # unit cell dimensions
-#a <- 78.64	# NB!!! these are cryo-dimensions!
-#b <- 79.64
-#c <- 37.06
+a <- 78.64	# NB!!! these are cryo-dimensions!
+b <- 78.64
+c <- 37.06
 
-a <- 79.3	# NB!!! these are RT-dimensions!
-b <- 79.3 
-c <- 38.2 
+#a <- 79.3	# NB!!! these are RT-dimensions!
+#b <- 79.3 
+#c <- 38.2 
 
 rmsd <- c()
 
@@ -60,11 +60,14 @@ z2$RMSF <- apply(z2, 1, rmsf, ucp = c, ref = refz)
 png("frame45_z2_rmsf.png")
 plot(z2$RMSF, pch = 19, cex = 0.5, xlab = "atoms", ylab = "RMSF")
 lines(z2$RMSF)
+
 dev.off()
 
 x2$RMSF <- NULL
 y2$RMSF <- NULL
 z2$RMSF <- NULL
+
+python.load('/work/berg/scripts/changePDB.py')
 
 for(n in 1:101){
       tmp <- scan(sprintf("x%.0f.txt",n))
@@ -78,9 +81,19 @@ for(n in 1:101){
       colnames(z) <- c(LETTERS[1:8]) 
 
       if(n == 1){
-      	   refx <- x$A
-	   refy <- y$A
-	   refz <- z$A
+      	   refx <- x$A%%a
+	   refy <- y$A%%b
+	   refz <- z$A%%c
+
+	   #for(t in 1:8){
+	   #     x_premodulo <- x2[,t][1]
+	   # 	y_premodulo <- y2[,t][1]
+	   # 	z_premodulo <- z2[,t][1]
+
+#      	    	x_trans <- x_premodulo%%a - x_premodulo
+#	    	y_trans <- y_premodulo%%b - y_premodulo
+#	    	z_trans <- z_premodulo%%c - z_premodulo
+#	   }
       }
 
       x2 <- x
@@ -91,42 +104,77 @@ for(n in 1:101){
       #y <- y%%b
       #z <- z%%c
 
-      x2$A <- x$A%%a
-      y2$A <- y$A%%b
-      z2$A <- z$A%%c
+      #x2$A <- x$A%%a
+      #y2$A <- y$A%%b
+      #z2$A <- z$A%%c
 
-      x2$B <- (-x$B + a)%%a		# -X+1
-      y2$B <- (-y$B + b)%%b	  	# -Y+1
-      z2$B <- (z$B - 0.5*c)%%c	  	# Z+1/2
+      x2$B <- (-x$B)		# -X+1
+      y2$B <- (-y$B)	  	# -Y+1
+      z2$B <- (z$B - 0.5*c)	  	# Z+1/2
 
-      x2$C <- (y$C - 0.5*b)%%a		# -Y+1/2
-      y2$C <- (-x$C + 0.5*a)%%b   		# X+1/2
-      z2$C <- (z$C + 0.25*c)%%c		# Z-1/4
+      x2$C <- (y$C - 0.5*b)		# -Y+1/2
+      y2$C <- (-x$C + 0.5*a)   		# X+1/2
+      z2$C <- (z$C + 0.25*c)		# Z-1/4
 
-      x2$D <- (-y$D + 0.5*a)%%a		# Y+1/2
-      y2$D <- (x$D - 0.5*b)%%b 		 # -X+1/2
-      z2$D <- (z$D - 0.25*c)%%c		# Z+1/4
+      x2$D <- (-y$D + 0.5*a)		# Y+1/2
+      y2$D <- (x$D - 0.5*b) 		 # -X+1/2
+      z2$D <- (z$D - 0.25*c)		# Z+1/4
 
-      x2$E <- (-x$E + 0.5*a)%%a	  	# -X+1/2
-      y2$E <- (y$E - 0.5*b)%%b		# Y+1/2
-      z2$E <- (-z$E + 0.75*c)%%c		# -Z+3/4
+      x2$E <- (-x$E + 0.5*a)	  	# -X+1/2
+      y2$E <- (y$E - 0.5*b)		# Y+1/2
+      z2$E <- (-z$E + 0.75*c)		# -Z+3/4
 
-      x2$F <- (x$F - 0.5*a)%%a		# X+1/2
-      y2$F <- (-y$F + 0.5*b)%%b		# -Y+1/2
-      z2$F <- (-z$F + 1.25*c)%%c	  	# -Z+5/4
+      x2$F <- (x$F - 0.5*a)		# X+1/2
+      y2$F <- (-y$F + 0.5*b)		# -Y+1/2
+      z2$F <- (-z$F + 0.25*c)	  	# -Z+5/4
 
-      x2$G <- (y$G)%%b			# Y
-      y2$G <- x$G%%a			# X
-      z2$G <- (-z$G + c)%%c		# -Z+1
+      x2$G <- (y$G)			# Y
+      y2$G <- x$G			# X
+      z2$G <- (-z$G)		# -Z+1
 
-      x2$H <- (-y$H + a)%%a		# -Y+1
-      y2$H <- (-x$H + b)%%b		# -X+1
-      z2$H <- (-z$H - 0.5*c)%%c		# -Z+1/2
+      x2$H <- (-y$H)		# -Y+1
+      y2$H <- (-x$H)		# -X+1
+      z2$H <- (-z$H - 0.5*c)		# -Z+1/2
+
+      # to put the first atom in the unit cell, and keep molecules whole
+      
+      for(t in 1:8){
+           x_premodulo <- x2[,t][1]
+	   y_premodulo <- y2[,t][1]
+	   z_premodulo <- z2[,t][1]
+
+      	   x_trans <- x_premodulo%%a - x_premodulo
+	   y_trans <- y_premodulo%%b - y_premodulo
+	   z_trans <- z_premodulo%%c - z_premodulo
+	   
+	   x2[,t] <- x2[,t] + x_trans
+	   y2[,t] <- y2[,t] + y_trans
+	   z2[,t] <- z2[,t] + z_trans
+      }
 
       rmsd <- c(rmsd, mean(RMSD(x2, ref = refx, ucp = a), RMSD(y2, ref = refy, ucp = b), RMSD(z2, ref = refz, ucp = c)))
+
+      # to write to a pdb file
+
+      x3 <- c()
+      for (t in 1:8){
+      	  x3 <- c(x3, x2[,t])
+      }
+
+      y3 <- c()
+      for (t in 1:8){
+      	  y3 <- c(y3, y2[,t])
+      }
+
+      z3 <- c()
+      for (t in 1:8){
+      	  z3 <- c(z3, z2[,t])
+      }
+
+      python.call('change', x3, y3, z3, n)
 }
 
-png("rmsd_300K_NPT.png")
+png("rmsd_300K_NVT_cryo_PC1_3.png")
 plot(rmsd, pch = 19, cex = 0.5, xlab = "timesteps", ylab = "RMSD")
 lines(rmsd)
 dev.off()
@@ -134,19 +182,19 @@ dev.off()
 # to write to a pdb file
 
 x3 <- c()
-for (n in 1:8){
-    x3 <- c(x3, x2[,n])
+for (t in 1:8){
+    x3 <- c(x3, x2[,t])
 }
 
 y3 <- c()
-for (n in 1:8){
-    y3 <- c(y3, y2[,n])
+for (t in 1:8){
+    y3 <- c(y3, y2[,t])
 }
 
 z3 <- c()
-for (n in 1:8){
-    z3 <- c(z3, z2[,n])
+for (t in 1:8){
+    z3 <- c(z3, z2[,t])
 }
 
-python.load('../../scripts/changePDB.py')
-python.call('change', x3, y3, z3)
+python.load('/work/berg/scripts/changePDB.py')
+python.call('change', x3, y3, z3, n)
