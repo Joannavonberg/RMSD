@@ -91,20 +91,14 @@ refx <- scan("/work/berg/Git/ref/x_RT_protein_noH.txt")
 refy <- scan("/work/berg/Git/ref/y_RT_protein_noH.txt")
 refz <- scan("/work/berg/Git/ref/z_RT_protein_noH.txt")
 
+x_trans <- c()
+y_trans <- c()
+z_trans <- c()
+
 for(n in 1:51){
       x <- load("x", n)
       y <- load("y", n)
       z <- load("z", n)
-
-      tmp <- scan(sprintf("x%.0f.txt",n))
-      x <- data.frame(matrix(tmp, ncol = 8))
-      colnames(x) <- c(LETTERS[1:8])		
-      tmp <- scan(sprintf("y%.0f.txt",n))
-      y <- data.frame(matrix(tmp, ncol = 8))
-      colnames(y) <- c(LETTERS[1:8])
-      tmp <- scan(sprintf("z%.0f.txt",n))
-      z <- data.frame(matrix(tmp, ncol = 8))
-      colnames(z) <- c(LETTERS[1:8]) 
 
       x2 <- x
       y2 <- y
@@ -146,20 +140,24 @@ for(n in 1:51){
       y2$H <- (-x$H)		# -X+1
       z2$H <- (-z$H + 0.5*c)		# -Z+1/2
 
-      # to put the first atom in the unit cell, and keep molecules whole
-      
-      for(t in 1:8){
-           x_premodulo <- x2[,t][1]
-	   y_premodulo <- y2[,t][1]
-	   z_premodulo <- z2[,t][1]
+      # to put the first (or 505th) atom in the unit cell, and keep molecules whole
+      if(n == 1){
+      	   for(t in 1:8){
+      	   	 x_premodulo <- x2[505,t]
+	   	 y_premodulo <- y2[505,t]
+	   	 z_premodulo <- z2[505,t]
 
-      	   x_trans <- x_premodulo%%a - x_premodulo
-	   y_trans <- y_premodulo%%b - y_premodulo
-	   z_trans <- z_premodulo%%c - z_premodulo
-	   
-	   x2[,t] <- x2[,t] + x_trans
-	   y2[,t] <- y2[,t] + y_trans
-	   z2[,t] <- z2[,t] + z_trans
+      	   	 x_trans <- c(x_trans, x_premodulo%%a - x_premodulo)
+	   	 y_trans <- c(y_trans, y_premodulo%%b - y_premodulo)
+	   	 z_trans <- c(z_trans, z_premodulo%%c - z_premodulo)
+	   }
+      }
+
+      # to make sure the same translation is used in every timestep, it is only calculated for the first timestep
+      for(t in 1:8){
+      	    x2[,t] <- x2[,t] + x_trans[t]
+	    y2[,t] <- y2[,t] + y_trans[t]
+	    z2[,t] <- z2[,t] + z_trans[t]
       }
 
       rmsd <- c(rmsd, sqrt(sqrt(RMSD(x2, ref = refx, ucp = a)^2 + RMSD(y2, ref = refy, ucp = b)^2)+ RMSD(z2, ref = refz, ucp = c)^2) )
@@ -184,7 +182,7 @@ for(n in 1:51){
       python.call('change', x3, y3, z3, n, FALSE)
 }
 
-png("rmsd_300K_NVT_cryo2.png")
+png("rmsd_test2.png")
 
 plot(50:100, rmsd, pch = 19, cex = 0.5, xlab = "timesteps", ylab = "RMSD", ylim = c(0, 1.8))
 lines(50:100, rmsd)
