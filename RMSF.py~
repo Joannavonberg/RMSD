@@ -1,0 +1,51 @@
+#!/usr/bin/env python
+
+import time
+import sys
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
+
+start = time.time()
+
+# unit cell dimensions
+#a = 78.64	# NB!!! these are cryo-dimensions!
+#b = 78.64
+#c = 37.06
+
+a = 79.3	# NB!!! these are RT-dimensions!
+b = 79.3 
+c = 38.2 
+
+rmsd = []
+
+def RMSD(data, ref, ucp):
+    tot = 0
+    tot = data.sum(data.apply(MeanDifference, axis='index', ref = ref, ucp = ucp))
+    tot = np.sqrt(tot/data[1,].size)
+    return tot
+
+def MeanDifference(col, ref, ucp):
+    tot = 0
+    for n in range(1, col.size):
+        tot = tot + min((ucp - max(ref[n], col[n]) + min(ref[n], col[n])), abs(ref[n] - col[n]))^2
+        n += 1
+    tot = tot/col.size
+    return tot
+
+def diff(row, ucp, ref):
+    tot = 0
+    n = 1
+    for e in row:
+        tot = tot +
+        n += 1
+    tot =
+    return tot
+
+def load(a, n):
+    tmp =
+    x = pd.DataFrame()
+
+end = time.time()
+print(end - start)

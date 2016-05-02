@@ -5,13 +5,13 @@ library(rPython)
 options(stringsasFactors = FALSE)
 
 # unit cell dimensions
-#a <- 78.64	# NB!!! these are cryo-dimensions!
-#b <- 78.64
-#c <- 37.06
+a <- 78.64	# NB!!! these are cryo-dimensions!
+b <- 78.64
+c <- 37.06
 
-a <- 79.3	# NB!!! these are RT-dimensions!
-b <- 79.3 
-c <- 38.2 
+#a <- 79.3	# NB!!! these are RT-dimensions!
+#b <- 79.3 
+#c <- 38.2 
 
 rmsd <- c()
 
@@ -82,20 +82,20 @@ z2$RMSF <- NULL
 python.load('/work/berg/scripts/changePDB.py')
 
 #	CRYO
-#refx <- scan("/work/berg/Git/ref/x_cryo_protein_noH.txt")
-#refy <- scan("/work/berg/Git/ref/y_cryo_protein_noH.txt")
-#refz <- scan("/work/berg/Git/ref/z_cryo_protein_noH.txt")
+refx <- scan("/work/berg/Git/ref/x_cryo_protein_noH.txt")
+refy <- scan("/work/berg/Git/ref/y_cryo_protein_noH.txt")
+refz <- scan("/work/berg/Git/ref/z_cryo_protein_noH.txt")
 
 #	RT
-refx <- scan("/work/berg/Git/ref/x_RT_protein_noH.txt")
-refy <- scan("/work/berg/Git/ref/y_RT_protein_noH.txt")
-refz <- scan("/work/berg/Git/ref/z_RT_protein_noH.txt")
+#refx <- scan("/work/berg/Git/ref/x_RT_protein_noH.txt")
+#refy <- scan("/work/berg/Git/ref/y_RT_protein_noH.txt")
+#refz <- scan("/work/berg/Git/ref/z_RT_protein_noH.txt")
 
 x_trans <- c()
 y_trans <- c()
 z_trans <- c()
 
-for(n in 1:51){
+for(n in 1:601){
       x <- load("x", n)
       y <- load("y", n)
       z <- load("z", n)
@@ -184,7 +184,7 @@ for(n in 1:51){
 
 png("rmsd_test2.png")
 
-plot(50:100, rmsd, pch = 19, cex = 0.5, xlab = "timesteps", ylab = "RMSD", ylim = c(0, 1.8))
-lines(50:100, rmsd)
+plot(rmsd, pch = 19, cex = 0.5, xlab = "timesteps", ylab = "RMSD")
+lines(rmsd)
 
 dev.off()
