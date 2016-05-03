@@ -10,33 +10,35 @@ start = time.time()
 
 if sys.argv[1] == "mainchain":
     mainchain = True
+else:
+    mainchain = False
 
 nfiles = int(sys.argv[2])
 
 if sys.argv[3] == "cryo":
     cryo = True
+else:
+    cryo = False
     
 # unit cell dimensions
 if(cryo):
-    a = 78.64	# NB!!! these are cryo-dimensions!
+    a = 78.64
     b = 78.64
     c = 37.06
     temp = "cryo"
 else:
-    a = 79.3	# NB!!! these are RT-dimensions!
+    a = 79.3
     b = 79.3 
     c = 38.2
     temp = "RT"
     
-# load references
-refx = pd.read_csv("/work/berg/Git/ref/x_%s_protein_noH.txt" %temp, header=None, squeeze=True)
-refy = pd.read_csv("/work/berg/Git/ref/y_%s_protein_noH.txt" %temp, header=None, squeeze=True)
-refz = pd.read_csv("/work/berg/Git/ref/z_%s_protein_noH.txt" %temp, header=None, squeeze=True)
+# load crystal structure references
+if not mainchain:
+    refx = pd.read_csv("/work/berg/Git/ref/x_%s_protein_noH.txt" %temp, header=None, squeeze=True)
+    refy = pd.read_csv("/work/berg/Git/ref/y_%s_protein_noH.txt" %temp, header=None, squeeze=True)
+    refz = pd.read_csv("/work/berg/Git/ref/z_%s_protein_noH.txt" %temp, header=None, squeeze=True)
 
 rmsd = []
-x_trans = []
-y_trans = []
-z_trans = []
 
 def RMSD(data, ref, ucp):
     tot = 0
@@ -47,7 +49,7 @@ def RMSD(data, ref, ucp):
 def MeanDifference(col, ref, ucp):
     tot = 0
     for n in range(0, col.size-1):
-        tot = tot + min((ucp - max(ref[n], col[n]) + min(ref[n], col[n])), abs(ref[n] - col[n]))^2
+        tot = tot + min((ucp - max(ref[n], col[n]) + min(ref[n], col[n])), abs(ref[n] - col[n])) ** 2
     tot = tot/col.size
     return tot
 
@@ -83,10 +85,8 @@ def writePDB(x, y, z, filenumber, mainchain):
     f.close()
     fout.close()
 
-def ChangeSign(x, col):
-    x.loc[:,col] = x.loc[:,col].apply(lambda x: -x)
-    
-for n in range(1, nfiles):
+for n in range(1, nfiles+1):
+    print("\n n is " + str(n) + "\n")
     x = load("x", n)
     y = load("y", n)
     z = load("z", n)
@@ -101,13 +101,6 @@ construct a boolean dataframe for each symmetry operator and assign set value to
     - pq : plus quarter, x = x + 0.25*ucp
     - pt : plus three quarter, x = x + 0.75*ucp
     """
-
-    """init = np.repeat(False, 4)
-    signchangers = {}
-    for letter in range(ord('A'), ord('I')):
-        signchangers[chr(letter)] = init
-    signchangers = pd.DataFrame(signchangers)"""
-
     # sign change
     sg = {}
     sg['A'] = np.repeat(False, 3)
@@ -121,7 +114,7 @@ construct a boolean dataframe for each symmetry operator and assign set value to
     sg = pd.DataFrame(sg)
     #sg.index = ['x', 'y', 'z']
 
-    # - 0.5 * ucp
+    # minus half
     mh = {}
     mh['A'] = np.repeat(False, 3)
     mh['B'] = [False, False, True]
@@ -132,13 +125,14 @@ construct a boolean dataframe for each symmetry operator and assign set value to
     mh['G'] = mh['H'] = np.repeat(False, 3)
     mh = pd.DataFrame(mh)
 
-    # + 0.5 * ucp
+    # plus half
     ph = {}
-    ph['A'] = ph['B'] = ph['G'] = ph['H'] = np.repeat(False, 3)
+    ph['A'] = ph['B'] = ph['G'] =  np.repeat(False, 3)
     ph['C'] = [False, True, False]
     ph['D'] = [True, False, False]
     ph['E'] = [True, False, False]
     ph['F'] = [False, True, False]
+    ph['H'] = [False, False, True]
     ph = pd.DataFrame(ph)
 
     # minus quarter
@@ -161,51 +155,56 @@ construct a boolean dataframe for each symmetry operator and assign set value to
     pt = pd.DataFrame(pt)
 
     # applying the relevant symmetry operations
-    n = -1
+    t = -1
     ucp = [a, b, c]
     for coord in x, y, z:
-        n += 1
-        #co += 1
+        t += 1
         for letter in range(ord('A'), ord('I')):
-            if sg.loc[n, chr(letter)]:
+            if sg.loc[t, chr(letter)]:
                 coord.loc[:,chr(letter)] = coord.loc[:,chr(letter)].apply(lambda x: -x)
-            if mh.loc[n, chr(letter)]:
-                coord.loc[:,chr(letter)] = coord.loc[:,chr(letter)].apply(lambda x: x - 0.5*ucp[n])
-            if ph.loc[n, chr(letter)]:
-                coord.loc[:,chr(letter)] = coord.loc[:,chr(letter)].apply(lambda x: x + 0.5*ucp[n])
-            if mq.loc[n, chr(letter)]:
-                coord.loc[:,chr(letter)] = coord.loc[:,chr(letter)].apply(lambda x: x - 0.25*ucp[n])
-            if pq.loc[n, chr(letter)]:
-                coord.loc[:,chr(letter)] = coord.loc[:,chr(letter)].apply(lambda x: x + 0.25*ucp[n])
-            if pt.loc[n, chr(letter)]:
-                coord.loc[:,chr(letter)] = coord.loc[:,chr(letter)].apply(lambda x: x + 0.75*ucp[n])
-    
-    if n==1:
+            if mh.loc[t, chr(letter)]:
+                coord.loc[:,chr(letter)] = coord.loc[:,chr(letter)].apply(lambda x: x - 0.5*ucp[t])
+            if ph.loc[t, chr(letter)]:
+                coord.loc[:,chr(letter)] = coord.loc[:,chr(letter)].apply(lambda x: x + 0.5*ucp[t])
+            if mq.loc[t, chr(letter)]:
+                coord.loc[:,chr(letter)] = coord.loc[:,chr(letter)].apply(lambda x: x - 0.25*ucp[t])
+            if pq.loc[t, chr(letter)]:
+                coord.loc[:,chr(letter)] = coord.loc[:,chr(letter)].apply(lambda x: x + 0.25*ucp[t])
+            if pt.loc[t, chr(letter)]:
+                coord.loc[:,chr(letter)] = coord.loc[:,chr(letter)].apply(lambda x: x + 0.75*ucp[t])
+    print("\n x is")
+    print(x)
+    if n is 1:
+        x_trans = []
+        y_trans = []
+        z_trans = []
         for letter in range(ord('A'), ord('I')):
             x_premodulo = x.loc[505,chr(letter)]
             y_premodulo = y.loc[505,chr(letter)]
             z_premodulo = z.loc[505,chr(letter)]
-
-            x_trans.append(x_premodulo.apply(lambda x: x%a - x))
-            y_trans.append(y_premodulo.apply(lambda x: x%a - x))
-            z_trans.append(z_premodulo.apply(lambda x: x%a - x))
-    i = -1
-    for letter in range(ord('A'), ord('I')):        
-        x.loc[:,chr(letter)] = x.loc[:,chr(letter)].apply(lambda x: x +x_trans[i])
-        y.loc[:,chr(letter)] = y.loc[:,chr(letter)].apply(lambda x: x +x_trans[i])
-        z.loc[:,chr(letter)] = z.loc[:,chr(letter)].apply(lambda x: x +x_trans[i])
+            x_trans.append(x_premodulo%a - x_premodulo)
+            y_trans.append(y_premodulo%b - y_premodulo)
+            z_trans.append(z_premodulo%c - z_premodulo)
+    i = 0
+    for letter in range(ord('A'), ord('I')):
+        x.loc[:,chr(letter)] = x.loc[:,chr(letter)].apply(lambda x: x + x_trans[i])
+        y.loc[:,chr(letter)] = y.loc[:,chr(letter)].apply(lambda x: x + y_trans[i])
+        z.loc[:,chr(letter)] = z.loc[:,chr(letter)].apply(lambda x: x + z_trans[i])
         i+=1
-
-    rmsd.append(np.sqrt(np.sqrt(RMSD(x, ref = refx, ucp = a)^2 + RMSD(y, ref = refy, ucp = b)^2)+ RMSD(z2, ref = refz, ucp = c)^2))
+    print("\n x is")
+    print(x)
+        
+    # for writing to PDB file    
     x2 = []
     y2 = []
     z2 = []
-    for t in range(1,8):
-        x2.append(x.loc[:,t])
-        y2.append(y.loc[:,t])
-        z2.append(z.loc[:,t])
+    for letter in range(ord('A'), ord('I')):
+        for t in range(x.loc[:,chr(letter)].size):
+            x2.append(x.loc[t,chr(letter)])
+            y2.append(y.loc[t,chr(letter)])
+            z2.append(z.loc[t,chr(letter)])
 
-    writePDB(x2, y2, z2, n, mainchain)
+    writePDB(x2, y2, z2, n, mainchain) 
         
 end = time.time()
 print("This script took " + str(end - start) + " seconds to finish.")

@@ -79,7 +79,7 @@ x2$RMSF <- NULL
 y2$RMSF <- NULL
 z2$RMSF <- NULL
 
-python.load('/work/berg/scripts/changePDB.py')
+python.load('/work/berg/scripts/old/changePDB.py')
 
 #	CRYO
 refx <- scan("/work/berg/Git/ref/x_cryo_protein_noH.txt")
@@ -95,7 +95,7 @@ x_trans <- c()
 y_trans <- c()
 z_trans <- c()
 
-for(n in 1:601){
+for(n in 1:1){
       x <- load("x", n)
       y <- load("y", n)
       z <- load("z", n)
