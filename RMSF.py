@@ -4,7 +4,6 @@ import time
 import sys
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 
 start = time.time()
 
@@ -100,7 +99,7 @@ construct a boolean dataframe for each symmetry operator and assign set value to
     - mq : minus quarter, x = x - 0.25*ucp
     - pq : plus quarter, x = x + 0.25*ucp
     - pt : plus three quarter, x = x + 0.75*ucp
-    """
+    
     # sign change
     sg = {}
     sg['A'] = np.repeat(False, 3)
@@ -172,8 +171,21 @@ construct a boolean dataframe for each symmetry operator and assign set value to
                 coord.loc[:,chr(letter)] = coord.loc[:,chr(letter)].apply(lambda x: x + 0.25*ucp[t])
             if pt.loc[t, chr(letter)]:
                 coord.loc[:,chr(letter)] = coord.loc[:,chr(letter)].apply(lambda x: x + 0.75*ucp[t])
-    print("\n x is")
-    print(x)
+"""
+    sg = lambda x: -x
+
+    def turnaround(num1, num2, fun):
+        num1 = fun(num1)
+        return num1
+
+    x.loc[:,'B'] = x.loc[:,'B'].apply(sg)
+    y.loc[:,'B'] = y.loc[:,'B'].apply(sg)
+    z.loc[:,'B'] = z.loc[:,'B'].apply(lambda x: x - 0.5*c)
+
+    x.loc[:,'C'] = x.loc[:,'C'].apply(turnaround, num2 = y.loc[:,'C'], fun = lambda x: x - 0.5*b)
+    y.loc[:,'C'] = y.loc[:,'C'].apply()
+    z.loc[:,'C'] = z.loc[:,'C'].apply()
+
     if n is 1:
         x_trans = []
         y_trans = []
@@ -191,8 +203,6 @@ construct a boolean dataframe for each symmetry operator and assign set value to
         y.loc[:,chr(letter)] = y.loc[:,chr(letter)].apply(lambda x: x + y_trans[i])
         z.loc[:,chr(letter)] = z.loc[:,chr(letter)].apply(lambda x: x + z_trans[i])
         i+=1
-    print("\n x is")
-    print(x)
         
     # for writing to PDB file    
     x2 = []
