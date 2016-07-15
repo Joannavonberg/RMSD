@@ -90,131 +90,69 @@ for n in range(1, nfiles+1):
     y = load("y", n)
     z = load("z", n)
 
-    """
-
-construct a boolean dataframe for each symmetry operator and assign set value to True for monomers that need that specific operator
-    - sg : sign change, x = -x
-    - mh : minus half, x = x - 0.5*ucp
-    - ph : plus half, x = x + 0.5*ucp
-    - mq : minus quarter, x = x - 0.25*ucp
-    - pq : plus quarter, x = x + 0.25*ucp
-    - pt : plus three quarter, x = x + 0.75*ucp
-    
-    # sign change
-    sg = {}
-    sg['A'] = np.repeat(False, 3)
-    sg['B'] = [True, True, False]
-    sg['C'] = [False, True, False]
-    sg['D'] = [True, False, False]
-    sg['E'] = [True, False, True]
-    sg['F'] = [False, True, True]
-    sg['G'] = [False, False, True]
-    sg['H'] = [True, True, True]
-    sg = pd.DataFrame(sg)
-    #sg.index = ['x', 'y', 'z']
-
-    # minus half
-    mh = {}
-    mh['A'] = np.repeat(False, 3)
-    mh['B'] = [False, False, True]
-    mh['C'] = [True, False, False]
-    mh['D'] = [False, True, False]
-    mh['E'] = [False, True, False]
-    mh['F'] = [True, False, False]
-    mh['G'] = mh['H'] = np.repeat(False, 3)
-    mh = pd.DataFrame(mh)
-
-    # plus half
-    ph = {}
-    ph['A'] = ph['B'] = ph['G'] =  np.repeat(False, 3)
-    ph['C'] = [False, True, False]
-    ph['D'] = [True, False, False]
-    ph['E'] = [True, False, False]
-    ph['F'] = [False, True, False]
-    ph['H'] = [False, False, True]
-    ph = pd.DataFrame(ph)
-
-    # minus quarter
-    mq = {}
-    mq['A'] = mq['B'] = mq['C'] = mq['E'] = mq['F'] = mq['G'] = mq['H'] = np.repeat(False, 3)
-    mq['D'] = [False, False, True]
-    mq = pd.DataFrame(mq)
-
-    # plus quarter
-    pq = {}
-    pq['A'] = pq['B'] = pq['D'] = pq['E'] = pq['G'] = pq['H'] = np.repeat(False, 3)
-    pq['C'] = [False, False, True]
-    pq['F'] = [False, False, True]
-    pq = pd.DataFrame(pq)
-
-    # plus three quarter
-    pt = {}
-    pt['A'] = pt['B'] = pt['C'] = pt['D'] = pt['F'] = pt['G'] = pt['H'] = np.repeat(False, 3)
-    pt['E'] = [False, False, True]
-    pt = pd.DataFrame(pt)
-
-    # applying the relevant symmetry operations
-    t = -1
-    ucp = [a, b, c]
-    for coord in x, y, z:
-        t += 1
-        for letter in range(ord('A'), ord('I')):
-            if sg.loc[t, chr(letter)]:
-                coord.loc[:,chr(letter)] = coord.loc[:,chr(letter)].apply(lambda x: -x)
-            if mh.loc[t, chr(letter)]:
-                coord.loc[:,chr(letter)] = coord.loc[:,chr(letter)].apply(lambda x: x - 0.5*ucp[t])
-            if ph.loc[t, chr(letter)]:
-                coord.loc[:,chr(letter)] = coord.loc[:,chr(letter)].apply(lambda x: x + 0.5*ucp[t])
-            if mq.loc[t, chr(letter)]:
-                coord.loc[:,chr(letter)] = coord.loc[:,chr(letter)].apply(lambda x: x - 0.25*ucp[t])
-            if pq.loc[t, chr(letter)]:
-                coord.loc[:,chr(letter)] = coord.loc[:,chr(letter)].apply(lambda x: x + 0.25*ucp[t])
-            if pt.loc[t, chr(letter)]:
-                coord.loc[:,chr(letter)] = coord.loc[:,chr(letter)].apply(lambda x: x + 0.75*ucp[t])
+    x2 = x
+    y2 = y
+    z2 = z
+""" 
+The chains that have an exchange of axes seem to go wrong...
 """
-    sg = lambda x: -x
+    x2.loc[:,'B'] = x.loc[:,'B'] * -1
+    y2.loc[:,'B'] = y.loc[:,'B'] * -1
+    z2.loc[:,'B'] = z.loc[:,'B'] - 0.5 * c
 
-    def turnaround(num1, num2, fun):
-        num1 = fun(num1)
-        return num1
+    x2.loc[:,'C'] = y.loc[:,'C'] - 0.5 * b #
+    y2.loc[:,'C'] = x.loc[:,'C'] + 0.5 * a
+    z2.loc[:,'C'] = z.loc[:,'C'] + 0.25 * c
 
-    x.loc[:,'B'] = x.loc[:,'B'].apply(sg)
-    y.loc[:,'B'] = y.loc[:,'B'].apply(sg)
-    z.loc[:,'B'] = z.loc[:,'B'].apply(lambda x: x - 0.5*c)
+    x2.loc[:,'D'] = y.loc[:,'D'] * -1 + 0.5 * b #
+    y2.loc[:,'D'] = x.loc[:,'D'] - 0.5 * a
+    z2.loc[:,'D'] = z.loc[:,'D'] - 0.25 * c
 
-    x.loc[:,'C'] = x.loc[:,'C'].apply(turnaround, num2 = y.loc[:,'C'], fun = lambda x: x - 0.5*b)
-    y.loc[:,'C'] = y.loc[:,'C'].apply()
-    z.loc[:,'C'] = z.loc[:,'C'].apply()
+    x2.loc[:,'E'] = x.loc[:,'E'] * -1 + 0.5 * a 
+    y2.loc[:,'E'] = y.loc[:,'E'] - 0.5 * b
+    z2.loc[:,'E'] = z.loc[:,'E'] * -1 + 0.75 * c
+
+    x2.loc[:,'F'] = x.loc[:,'F'] - 0.5 * a
+    y2.loc[:,'F'] = y.loc[:,'F'] * -1 + 0.5 * b
+    z2.loc[:,'F'] = z.loc[:,'F'] * -1 + 0.25 * c
+
+    x2.loc[:,'G'] = y.loc[:,'G'] #
+    y2.loc[:,'G'] = x.loc[:,'G']
+    z2.loc[:,'G'] = z.loc[:,'G'] * -1
+
+    x2.loc[:,'H'] = y.loc[:,'H'] * -1 #
+    y2.loc[:,'H'] = x.loc[:,'H'] * -1
+    z2.loc[:,'H'] = z.loc[:,'H'] * -1 + 0.5 * c
 
     if n is 1:
         x_trans = []
         y_trans = []
         z_trans = []
         for letter in range(ord('A'), ord('I')):
-            x_premodulo = x.loc[505,chr(letter)]
-            y_premodulo = y.loc[505,chr(letter)]
-            z_premodulo = z.loc[505,chr(letter)]
+            x_premodulo = x2.loc[505,chr(letter)]
+            y_premodulo = y2.loc[505,chr(letter)]
+            z_premodulo = z2.loc[505,chr(letter)]
             x_trans.append(x_premodulo%a - x_premodulo)
             y_trans.append(y_premodulo%b - y_premodulo)
             z_trans.append(z_premodulo%c - z_premodulo)
     i = 0
     for letter in range(ord('A'), ord('I')):
-        x.loc[:,chr(letter)] = x.loc[:,chr(letter)].apply(lambda x: x + x_trans[i])
-        y.loc[:,chr(letter)] = y.loc[:,chr(letter)].apply(lambda x: x + y_trans[i])
-        z.loc[:,chr(letter)] = z.loc[:,chr(letter)].apply(lambda x: x + z_trans[i])
+        x2.loc[:,chr(letter)] = x2.loc[:,chr(letter)] + x_trans[i]
+        y2.loc[:,chr(letter)] = y2.loc[:,chr(letter)] + y_trans[i]
+        z2.loc[:,chr(letter)] = z2.loc[:,chr(letter)] + z_trans[i]
         i+=1
         
     # for writing to PDB file    
-    x2 = []
-    y2 = []
-    z2 = []
+    x3 = []
+    y3 = []
+    z3 = []
     for letter in range(ord('A'), ord('I')):
-        for t in range(x.loc[:,chr(letter)].size):
-            x2.append(x.loc[t,chr(letter)])
-            y2.append(y.loc[t,chr(letter)])
-            z2.append(z.loc[t,chr(letter)])
+        for t in range(x2.loc[:,chr(letter)].size):
+            x3.append(x2.loc[t,chr(letter)])
+            y3.append(y2.loc[t,chr(letter)])
+            z3.append(z2.loc[t,chr(letter)])
 
-    writePDB(x2, y2, z2, n, mainchain) 
+    writePDB(x3, y3, z3, n, mainchain) 
         
 end = time.time()
 print("This script took " + str(end - start) + " seconds to finish.")
