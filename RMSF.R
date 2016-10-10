@@ -77,7 +77,7 @@ x_trans <- c()
 y_trans <- c()
 z_trans <- c()
 
-for(n in 1:20000){
+for(n in 1:400){
       x <- load("x", n)
       y <- load("y", n)
       z <- load("z", n)
@@ -133,6 +133,9 @@ for(n in 1:20000){
 	   	 y_trans <- c(y_trans, y_premodulo%%b - y_premodulo)
 	   	 z_trans <- c(z_trans, z_premodulo%%c - z_premodulo)
 	   }
+	   refx <- apply(x2, 1, mean)
+	   refy <- apply(y2, 1, mean)
+	   refz <- apply(z2, 1, mean)
       }
 
       # to make sure the same translation is used in every timestep, it is only calculated for the first timestep
@@ -146,28 +149,29 @@ for(n in 1:20000){
 
       # to write to a pdb file
 
-      x3 <- c()
-      for (t in 1:8){
-      	  x3 <- c(x3, x2[,t])
-      }
+      #x3 <- c()
+      #for (t in 1:8){
+      #	  x3 <- c(x3, x2[,t])
+      #}
 
-      y3 <- c()
-      for (t in 1:8){
-      	  y3 <- c(y3, y2[,t])
-      }
+      #y3 <- c()
+      #for (t in 1:8){
+      #	  y3 <- c(y3, y2[,t])
+      #}
 
-      z3 <- c()
-      for (t in 1:8){
-      	  z3 <- c(z3, z2[,t])
-      }
+      #z3 <- c()
+      #for (t in 1:8){
+      #	  z3 <- c(z3, z2[,t])
+      #}
 
       #python.call('change', x3, y3, z3, n, FALSE)
 }
 
 
 
-png("rmsd.png")
+png("rmsd_step1asref.png")
 
-plot(rmsd, type = "l", main = "RMSD unit cell PCA, PC 1 to 5", xlab = "timestep (ns)", ylab = "RMSD (Angstrom)")#, ylim = c(1, 1.6))
+plot(rmsd, type = "l", axes=NULL, xlab = "timestep (ns)", ylab = "RMSD (Angstrom)")#, ylim = c(1, 1.6))
+axis(1, at=seq(0,400, 100), lab = "timestep (ns)")
 
 dev.off()
