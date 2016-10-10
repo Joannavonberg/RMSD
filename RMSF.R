@@ -5,13 +5,13 @@ library(rPython)
 options(stringsasFactors = FALSE)
 
 # unit cell dimensions
-a <- 78.64	# NB!!! these are cryo-dimensions!
-b <- 78.64
-c <- 37.06
+#a <- 78.64	# NB!!! these are cryo-dimensions!
+#b <- 78.64
+#c <- 37.06
 
-#a <- 79.3	# NB!!! these are RT-dimensions!
-#b <- 79.3 
-#c <- 38.2 
+a <- 79.3	# NB!!! these are RT-dimensions!
+b <- 79.3 
+c <- 38.2 
 
 rmsd <- c()
 
@@ -61,41 +61,23 @@ load <- function(a, n){
      x
 }
 
-x2$ref <- refx
-y2$ref <- refy
-z2$ref <- refz
-
-x2$RMSF <- apply(x2, 1, rmsf, ucp = a)#, ref = refx)
-y2$RMSF <- apply(y2, 1, rmsf, ucp = b)#, ref = refy)
-z2$RMSF <- apply(z2, 1, rmsf, ucp = c)#, ref = refz)
-
-png("frame45_z2_rmsf.png")
-plot(z2$RMSF, pch = 19, cex = 0.5, xlab = "atoms", ylab = "RMSF")
-lines(z2$RMSF)
-
-dev.off()
-
-x2$RMSF <- NULL
-y2$RMSF <- NULL
-z2$RMSF <- NULL
-
-python.load('/work/berg/scripts/changePDB.py')
+python.load('/work/berg/scripts/old/changePDB.py')
 
 #	CRYO
-refx <- scan("/work/berg/Git/ref/x_cryo_protein_noH.txt")
-refy <- scan("/work/berg/Git/ref/y_cryo_protein_noH.txt")
-refz <- scan("/work/berg/Git/ref/z_cryo_protein_noH.txt")
+#refx <- scan("/work/berg/Git/ref/x_cryo_protein_noH.txt")
+#refy <- scan("/work/berg/Git/ref/y_cryo_protein_noH.txt")
+#refz <- scan("/work/berg/Git/ref/z_cryo_protein_noH.txt")
 
 #	RT
-#refx <- scan("/work/berg/Git/ref/x_RT_protein_noH.txt")
-#refy <- scan("/work/berg/Git/ref/y_RT_protein_noH.txt")
-#refz <- scan("/work/berg/Git/ref/z_RT_protein_noH.txt")
+refx <- scan("/work/berg/Git/ref/x_RT_protein_noH.txt")
+refy <- scan("/work/berg/Git/ref/y_RT_protein_noH.txt")
+refz <- scan("/work/berg/Git/ref/z_RT_protein_noH.txt")
 
 x_trans <- c()
 y_trans <- c()
 z_trans <- c()
 
-for(n in 1:601){
+for(n in 1:400){
       x <- load("x", n)
       y <- load("y", n)
       z <- load("z", n)
@@ -151,6 +133,9 @@ for(n in 1:601){
 	   	 y_trans <- c(y_trans, y_premodulo%%b - y_premodulo)
 	   	 z_trans <- c(z_trans, z_premodulo%%c - z_premodulo)
 	   }
+	   refx <- apply(x2, 1, mean)
+	   refy <- apply(y2, 1, mean)
+	   refz <- apply(z2, 1, mean)
       }
 
       # to make sure the same translation is used in every timestep, it is only calculated for the first timestep
@@ -160,31 +145,33 @@ for(n in 1:601){
 	    z2[,t] <- z2[,t] + z_trans[t]
       }
 
-      rmsd <- c(rmsd, sqrt(sqrt(RMSD(x2, ref = refx, ucp = a)^2 + RMSD(y2, ref = refy, ucp = b)^2)+ RMSD(z2, ref = refz, ucp = c)^2) )
+      rmsd <- c(rmsd, sqrt(RMSD(x2, ref = refx, ucp = a)^2 + RMSD(y2, ref = refy, ucp = b)^2 + RMSD(z2, ref = refz, ucp = c)^2) )
 
       # to write to a pdb file
 
-      x3 <- c()
-      for (t in 1:8){
-      	  x3 <- c(x3, x2[,t])
-      }
+      #x3 <- c()
+      #for (t in 1:8){
+      #	  x3 <- c(x3, x2[,t])
+      #}
 
-      y3 <- c()
-      for (t in 1:8){
-      	  y3 <- c(y3, y2[,t])
-      }
+      #y3 <- c()
+      #for (t in 1:8){
+      #	  y3 <- c(y3, y2[,t])
+      #}
 
-      z3 <- c()
-      for (t in 1:8){
-      	  z3 <- c(z3, z2[,t])
-      }
+      #z3 <- c()
+      #for (t in 1:8){
+      #	  z3 <- c(z3, z2[,t])
+      #}
 
-      python.call('change', x3, y3, z3, n, FALSE)
+      #python.call('change', x3, y3, z3, n, FALSE)
 }
 
-png("rmsd_test2.png")
 
-plot(rmsd, pch = 19, cex = 0.5, xlab = "timesteps", ylab = "RMSD")
-lines(rmsd)
+
+png("rmsd_step1asref.png")
+
+plot(rmsd, type = "l", axes=NULL, xlab = "timestep (ns)", ylab = "RMSD (Angstrom)")#, ylim = c(1, 1.6))
+axis(1, at=seq(0,400, 100), lab = "timestep (ns)")
 
 dev.off()
